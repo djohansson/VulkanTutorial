@@ -8,10 +8,6 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
-//#include <GLFW/glfw3.h>
-//#define GLFW_EXPOSE_NATIVE_COCOA
-//#include <GLFW/glfw3native.h>
-
 #include <algorithm>
 #include <array>
 #include <assert.h>
@@ -22,8 +18,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <vector>
-
-//VK_EXT_debug_report
 
 #define CHECK_VKRESULT(res) \
 assert(res == VK_SUCCESS)
@@ -133,10 +127,9 @@ class VulkanTutorialApp
 {
 public:
     
-    VulkanTutorialApp()
+    VulkanTutorialApp(void* view, int width, int height)
     {
-        initWindow();
-        initVulkan();
+        initVulkan(view, width, height);
     }
     
     ~VulkanTutorialApp()
@@ -150,50 +143,6 @@ public:
     }
     
 private:
-    
-//    static void windowResize(GLFWwindow* window, int width, int height)
-//    {
-//        assert(window != nullptr);
-//        VulkanTutorialApp* app = static_cast<VulkanTutorialApp*>(glfwGetWindowUserPointer(window));
-//        assert(app != nullptr);
-//
-//        app->recreateSwapChain(width, height);
-//    }
-    
-    /*
-     static void framebufferResize(GLFWwindow* window, int width, int height)
-     {
-     assert(window != nullptr);
-     VulkanTutorialApp* app = static_cast<VulkanTutorialApp*>(glfwGetWindowUserPointer(window));
-     assert(app != nullptr);
-     
-     app->recreateSwapChain(width, height);
-     }
-     */
-    
-    void initWindow()
-    {
-        //glfwInit();
-        
-        //assert(glfwVulkanSupported() == GLFW_TRUE);
-        
-        //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        //glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        //glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_TRUE);
-        //glfwWindowHint(GLFW_COCOA_GRAPHICS_SWITCHING, GLFW_TRUE);
-        
-        //myWindow = glfwCreateWindow(320, 240, "VulkanTutorial", nullptr, nullptr);
-        
-        /*
-        void* nsView = getNSViewFromNSWindow(glfwGetCocoaWindow(myWindow));
-        makeNSViewMetalCompatible(nsView);
-        setHiDPIEnable(nsView, true);
-         */
-        
-        //glfwSetWindowUserPointer(myWindow, this);
-        //glfwSetWindowSizeCallback(myWindow, &windowResize);
-        //glfwSetFramebufferSizeCallback(myWindow, &framebufferResize);
-    }
     
     void createInstance()
     {
@@ -233,9 +182,9 @@ private:
             instanceExtensions[i] = availableInstanceExtensions[i].extensionName;
         
         std::sort(instanceExtensions.begin(), instanceExtensions.end(), [](const char* lhs, const char* rhs)
-                  {
-                      return strcmp(lhs, rhs) < 0;
-                  });
+        {
+            return strcmp(lhs, rhs) < 0;
+        });
         
         std::vector<const char*> requiredExtensions =
         {
@@ -271,16 +220,15 @@ private:
         CHECK_VKRESULT(vkCreateDebugReportCallbackEXT(myInstance, &debugCallbackInfo, nullptr, &myDebugCallback));
     }
     
-    void createSurface()
+    void createSurface(void* view)
     {
         VkMacOSSurfaceCreateInfoMVK surfaceCreateInfo = {};
         surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
         surfaceCreateInfo.flags = 0;
-        surfaceCreateInfo.pView = nullptr;//getNSViewFromNSWindow(glfwGetCocoaWindow(myWindow));
+        surfaceCreateInfo.pView = view;
         auto vkCreateMacOSSurfaceMVK = (PFN_vkCreateMacOSSurfaceMVK)vkGetInstanceProcAddr(myInstance, "vkCreateMacOSSurfaceMVK");
         assert(vkCreateMacOSSurfaceMVK != nullptr);
         CHECK_VKRESULT(vkCreateMacOSSurfaceMVK(myInstance, &surfaceCreateInfo, nullptr, &mySurface));
-        //CHECK_VKRESULT(glfwCreateWindowSurface(myInstance, myWindow, nullptr, &mySurface));
     }
     
     void createDevice()
@@ -326,9 +274,9 @@ private:
         vkEnumerateDeviceExtensionProperties(myPhysicalDevice, nullptr, &deviceExtensionCount, availableDeviceExtensions.data());
         
         assert(std::find_if(availableDeviceExtensions.begin(), availableDeviceExtensions.end(), [](const VkExtensionProperties& extension)
-                            {
-                                return strcmp(extension.extensionName, "VK_KHR_swapchain") == 0;
-                            }) != availableDeviceExtensions.end());
+        {
+            return strcmp(extension.extensionName, "VK_KHR_swapchain") == 0;
+        }) != availableDeviceExtensions.end());
         
         std::vector<const char*> deviceExtensions;
         for (const auto& extension : availableDeviceExtensions)
@@ -342,9 +290,9 @@ private:
         }
         
         std::sort(deviceExtensions.begin(), deviceExtensions.end(), [](const char* lhs, const char* rhs)
-                  {
-                      return strcmp(lhs, rhs) < 0;
-                  });
+        {
+            return strcmp(lhs, rhs) < 0;
+        });
         
         /*
          static const std::vector<const char*> requiredExtensions =
@@ -1004,15 +952,11 @@ private:
         CHECK_VKRESULT(vkCreateSampler(myDevice, &samplerInfo, nullptr, &mySampler));
     }
     
-    void initVulkan()
+    void initVulkan(void* window, int width, int height)
     {
-        int width = 0, height = 0;
-        //glfwGetWindowSize(myWindow, &width, &height);
-        //glfwGetFramebufferSize(myWindow, &width, &height);
-        
         createInstance();
         createDebugCallback();
-        createSurface();
+        createSurface(window);
         createDevice();
         createAllocator();
         createCommandPool();
@@ -1024,7 +968,7 @@ private:
         createDeviceLocalBuffer(ourVertices, sizeof_array(ourVertices), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, myVertexBuffer, myVertexBufferMemory);
         createDeviceLocalBuffer(ourIndices, sizeof_array(ourIndices), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, myIndexBuffer, myIndexBufferMemory);
         {
-            const PNGImage pngImage = PNGImage("fractal_tree.png");
+            const PNGImage pngImage = PNGImage("/../Resources/fractal_tree.png");
             createDeviceLocalImage2D(pngImage.myImage.data(), pngImage.myWidth, pngImage.myHeight, 4, VK_IMAGE_USAGE_SAMPLED_BIT, myImage, myImageMemory);
             myImageView = createImageView2D(myImage, VK_FORMAT_R8G8B8A8_UNORM);
             
@@ -1170,11 +1114,9 @@ private:
             //static auto startTime = std::chrono::high_resolution_clock::now();
             //auto currentTime = std::chrono::high_resolution_clock::now();
             float time = 0.0f;//std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime);
-            
-            //glfwPollEvents();
             updateUniformBuffer(time);
             drawFrame();
-        } while (false/*!glfwWindowShouldClose(myWindow)*/);
+        } while (true); // todo
         
         CHECK_VKRESULT(vkDeviceWaitIdle(myDevice));
     }
@@ -1227,9 +1169,6 @@ private:
         
         vkDestroySurfaceKHR(myInstance, mySurface, nullptr);
         vkDestroyInstance(myInstance, nullptr);
-        
-        //glfwDestroyWindow(myWindow);
-        //glfwTerminate();
     }
     
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
@@ -1314,7 +1253,6 @@ private:
         MaxFramesInFlight = 2,
     };
     
-    //GLFWwindow* myWindow = nullptr;
     VkInstance myInstance = VK_NULL_HANDLE;
     VkDebugReportCallbackEXT myDebugCallback = VK_NULL_HANDLE;
     VkSurfaceKHR mySurface = VK_NULL_HANDLE;
@@ -1369,8 +1307,12 @@ const uint16_t VulkanTutorialApp::ourIndices[] =
     0, 1, 2, 2, 3, 0
 };
 
-int vktut2_main(int argc, const char * argv[])
+VulkanTutorialApp* theApp = nullptr;
+
+int vktut2_create(void* view, int width, int height)
 {
+    assert(theApp == nullptr);
+    
     try
     {
         static const char* VK_LOADER_DEBUG_STR = "VK_LOADER_DEBUG";
@@ -1385,8 +1327,8 @@ int vktut2_main(int argc, const char * argv[])
         if (char* vkIcdFilenames = getenv(VK_ICD_FILENAMES_STR))
             std::cout << VK_ICD_FILENAMES_STR << "=" << vkIcdFilenames << std::endl;
         
-        VulkanTutorialApp app;
-        app.run();
+        theApp = new VulkanTutorialApp(view, width, height);
+        theApp->run();
     }
     catch (const std::runtime_error& e)
     {
@@ -1395,4 +1337,11 @@ int vktut2_main(int argc, const char * argv[])
     }
 
     return EXIT_SUCCESS;
+}
+
+void vktut2_destroy()
+{
+    assert(theApp != nullptr);
+    
+    delete theApp;
 }

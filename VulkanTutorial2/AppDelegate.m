@@ -1,12 +1,9 @@
-//
-//  AppDelegate.m
-//  VulkanTutorial2
-//
-//  Created by Daniel Johansson on 2018-07-20.
-//  Copyright © 2018 Ubisoft. All rights reserved.
-//
+#import <QuartzCore/CAMetalLayer.h>
 
 #import "AppDelegate.h"
+#import "ViewController.h"
+
+#include "VulkanTutorial2.hpp"
 
 @interface AppDelegate ()
 
@@ -14,13 +11,25 @@
 
 @implementation AppDelegate
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    // Insert code here to initialize your application
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    ViewController* viewController = (ViewController*)[[NSApplication sharedApplication] mainWindow].contentViewController;
+    NSView* view = [viewController view];
+    if (![view.layer isKindOfClass:[CAMetalLayer class]])
+    {
+        [view setLayer:[CAMetalLayer layer]];
+        [view setWantsLayer:YES];
+    }
+    
+    NSSize size = [view frame].size;
+    
+    vktut2_create((__bridge void *)(view), (int)size.width, (int)size.height);
 }
 
 
-- (void)applicationWillTerminate:(NSNotification *)aNotification {
-    // Insert code here to tear down your application
+- (void)applicationWillTerminate:(NSNotification *)aNotification
+{
+    vktut2_destroy();
 }
 
 

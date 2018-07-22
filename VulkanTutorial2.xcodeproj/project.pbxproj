@@ -17,6 +17,9 @@
 		537EA8822103EFD1008D5772 /* libVkLayer_threading.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 537EA8742103EFB1008D5772 /* libVkLayer_threading.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		537EA8832103EFD1008D5772 /* libVkLayer_unique_objects.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 537EA8772103EFB1008D5772 /* libVkLayer_unique_objects.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		537EA8842103EFD1008D5772 /* libVkLayer_utils.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 537EA8782103EFB1008D5772 /* libVkLayer_utils.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		537EA8862103FDF5008D5772 /* fractal_tree.png in Resources */ = {isa = PBXBuildFile; fileRef = 537EA8852103FDF5008D5772 /* fractal_tree.png */; };
+		537EA88A2103FE19008D5772 /* vert.spv in Resources */ = {isa = PBXBuildFile; fileRef = 537EA8882103FE18008D5772 /* vert.spv */; };
+		537EA88B2103FE19008D5772 /* frag.spv in Resources */ = {isa = PBXBuildFile; fileRef = 537EA8892103FE19008D5772 /* frag.spv */; };
 		53C816442102378E005121FA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 53C816432102378E005121FA /* AppDelegate.m */; };
 		53C816472102378E005121FA /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53C816462102378E005121FA /* ViewController.m */; };
 		53C8164921023791005121FA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53C8164821023791005121FA /* Assets.xcassets */; };
@@ -65,6 +68,9 @@
 		537EA8762103EFB1008D5772 /* libVkLayer_core_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_core_validation.dylib; path = "../../../../../usr/local/Caskroom/vulkan-sdk/1.1.77.0/macOS/lib/libVkLayer_core_validation.dylib"; sourceTree = "<group>"; };
 		537EA8772103EFB1008D5772 /* libVkLayer_unique_objects.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_unique_objects.dylib; path = "../../../../../usr/local/Caskroom/vulkan-sdk/1.1.77.0/macOS/lib/libVkLayer_unique_objects.dylib"; sourceTree = "<group>"; };
 		537EA8782103EFB1008D5772 /* libVkLayer_utils.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_utils.dylib; path = "../../../../../usr/local/Caskroom/vulkan-sdk/1.1.77.0/macOS/lib/libVkLayer_utils.dylib"; sourceTree = "<group>"; };
+		537EA8852103FDF5008D5772 /* fractal_tree.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = fractal_tree.png; path = VulkanTutorial2/fractal_tree.png; sourceTree = SOURCE_ROOT; };
+		537EA8882103FE18008D5772 /* vert.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = vert.spv; path = VulkanTutorial2/vert.spv; sourceTree = SOURCE_ROOT; };
+		537EA8892103FE19008D5772 /* frag.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = frag.spv; path = VulkanTutorial2/frag.spv; sourceTree = SOURCE_ROOT; };
 		53C8163F2102378E005121FA /* VulkanTutorial2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VulkanTutorial2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53C816422102378E005121FA /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		53C816432102378E005121FA /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -98,6 +104,9 @@
 		537EA8612103E889008D5772 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				537EA8892103FE19008D5772 /* frag.spv */,
+				537EA8882103FE18008D5772 /* vert.spv */,
+				537EA8852103FDF5008D5772 /* fractal_tree.png */,
 				537EA8622103E8B6008D5772 /* vulkan */,
 			);
 			path = Resources;
@@ -228,6 +237,9 @@
 				53C8164921023791005121FA /* Assets.xcassets in Resources */,
 				537EA8632103E8B6008D5772 /* vulkan in Resources */,
 				53C8164C21023791005121FA /* Main.storyboard in Resources */,
+				537EA88B2103FE19008D5772 /* frag.spv in Resources */,
+				537EA88A2103FE19008D5772 /* vert.spv in Resources */,
+				537EA8862103FDF5008D5772 /* fractal_tree.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
