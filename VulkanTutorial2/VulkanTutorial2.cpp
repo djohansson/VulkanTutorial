@@ -17,7 +17,10 @@
 #include <iostream>
 #include <stdexcept>
 #include <string_view>
+#include <thread>
 #include <vector>
+
+#include <CoreFoundation/CFBundle.h>
 
 #define CHECK_VKRESULT(res) \
 assert(res == VK_SUCCESS)
@@ -137,9 +140,10 @@ public:
         cleanup();
     }
     
-    void run()
+    void drawFrame(uint frameIndex)
     {
-        mainLoop();
+        updateUniformBuffer(frameIndex);
+        drawFrame();
     }
     
 private:
@@ -510,7 +514,12 @@ private:
     
     void createGraphicsPipeline()
     {
-        auto vsCode = readSPIRVFile("vert.spv");
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        
+        CFURLRef vertSPVURL = CFBundleCopyResourceURL(mainBundle, CFSTR("vert"), CFSTR("spv"), NULL);
+        const char* vertSPVPath = CFStringGetCStringPtr(CFURLCopyFileSystemPath(vertSPVURL, kCFURLPOSIXPathStyle), CFStringGetSystemEncoding());
+        
+        auto vsCode = readSPIRVFile(vertSPVPath);
         
         VkShaderModuleCreateInfo vsCreateInfo = {};
         vsCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -526,7 +535,10 @@ private:
         vsStageInfo.module = vsModule;
         vsStageInfo.pName = "main";
         
-        auto fsCode = readSPIRVFile("frag.spv");
+        CFURLRef fragSPVURL = CFBundleCopyResourceURL(mainBundle, CFSTR("frag"), CFSTR("spv"), NULL);
+        const char* fragSPVPath = CFStringGetCStringPtr(CFURLCopyFileSystemPath(fragSPVURL, kCFURLPOSIXPathStyle), CFStringGetSystemEncoding());
+        
+        auto fsCode = readSPIRVFile(fragSPVPath);
         
         VkShaderModuleCreateInfo fsCreateInfo = {};
         fsCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -968,7 +980,12 @@ private:
         createDeviceLocalBuffer(ourVertices, sizeof_array(ourVertices), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, myVertexBuffer, myVertexBufferMemory);
         createDeviceLocalBuffer(ourIndices, sizeof_array(ourIndices), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, myIndexBuffer, myIndexBufferMemory);
         {
-            const PNGImage pngImage = PNGImage("/../Resources/fractal_tree.png");
+            CFBundleRef mainBundle = CFBundleGetMainBundle();
+            CFURLRef imageURL = CFBundleCopyResourceURL(mainBundle, CFSTR("fractal_tree"), CFSTR("png"), NULL);
+            const char* imagePath = CFStringGetCStringPtr(CFURLCopyFileSystemPath(imageURL, kCFURLPOSIXPathStyle), CFStringGetSystemEncoding());
+            
+            const PNGImage pngImage = PNGImage(imagePath);
+            
             createDeviceLocalImage2D(pngImage.myImage.data(), pngImage.myWidth, pngImage.myHeight, 4, VK_IMAGE_USAGE_SAMPLED_BIT, myImage, myImageMemory);
             myImageView = createImageView2D(myImage, VK_FORMAT_R8G8B8A8_UNORM);
             
@@ -1045,7 +1062,7 @@ private:
             throw std::runtime_error("failed to flip swap chain image!");
     }
     
-    void updateUniformBuffer(float time)
+    void updateUniformBuffer(uint /*frameIndex*/)
     {
         UniformBufferObject ubo = {};
         ubo.model[0] = { 2, 0, 0, 0 };
@@ -1107,20 +1124,6 @@ private:
         myCurrentFrame = (myCurrentFrame + 1) % MaxFramesInFlight;
     }
     
-    void mainLoop()
-    {
-        do
-        {
-            //static auto startTime = std::chrono::high_resolution_clock::now();
-            //auto currentTime = std::chrono::high_resolution_clock::now();
-            float time = 0.0f;//std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime);
-            updateUniformBuffer(time);
-            drawFrame();
-        } while (true); // todo
-        
-        CHECK_VKRESULT(vkDeviceWaitIdle(myDevice));
-    }
-    
     void cleanupSwapChain()
     {
         for (size_t i = 0; i < mySwapChainFramebuffers.size(); i++)
@@ -1139,6 +1142,8 @@ private:
     
     void cleanup()
     {
+        CHECK_VKRESULT(vkDeviceWaitIdle(myDevice));
+        
         cleanupSwapChain();
         
         for (uint i = 0; i < MaxFramesInFlight; i++)
@@ -1328,7 +1333,6 @@ int vktut2_create(void* view, int width, int height)
             std::cout << VK_ICD_FILENAMES_STR << "=" << vkIcdFilenames << std::endl;
         
         theApp = new VulkanTutorialApp(view, width, height);
-        theApp->run();
     }
     catch (const std::runtime_error& e)
     {
@@ -1345,3 +1349,11 @@ void vktut2_destroy()
     
     delete theApp;
 }
+
+void vktut2_drawframe(unsigned int frame)
+{
+    assert(theApp != nullptr);
+    
+    theApp->drawFrame(frame);
+}
+

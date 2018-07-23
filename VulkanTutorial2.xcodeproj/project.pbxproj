@@ -20,6 +20,9 @@
 		537EA8862103FDF5008D5772 /* fractal_tree.png in Resources */ = {isa = PBXBuildFile; fileRef = 537EA8852103FDF5008D5772 /* fractal_tree.png */; };
 		537EA88A2103FE19008D5772 /* vert.spv in Resources */ = {isa = PBXBuildFile; fileRef = 537EA8882103FE18008D5772 /* vert.spv */; };
 		537EA88B2103FE19008D5772 /* frag.spv in Resources */ = {isa = PBXBuildFile; fileRef = 537EA8892103FE19008D5772 /* frag.spv */; };
+		537EA88D2104CFF0008D5772 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 537EA88C2104CFF0008D5772 /* CoreVideo.framework */; };
+		537EA88F2104D42F008D5772 /* RenderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 537EA88E2104D42F008D5772 /* RenderView.m */; };
+		537EA8922104D48A008D5772 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 537EA8912104D489008D5772 /* MetalKit.framework */; };
 		53C816442102378E005121FA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 53C816432102378E005121FA /* AppDelegate.m */; };
 		53C816472102378E005121FA /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53C816462102378E005121FA /* ViewController.m */; };
 		53C8164921023791005121FA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 53C8164821023791005121FA /* Assets.xcassets */; };
@@ -71,6 +74,10 @@
 		537EA8852103FDF5008D5772 /* fractal_tree.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = fractal_tree.png; path = VulkanTutorial2/fractal_tree.png; sourceTree = SOURCE_ROOT; };
 		537EA8882103FE18008D5772 /* vert.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = vert.spv; path = VulkanTutorial2/vert.spv; sourceTree = SOURCE_ROOT; };
 		537EA8892103FE19008D5772 /* frag.spv */ = {isa = PBXFileReference; lastKnownFileType = file; name = frag.spv; path = VulkanTutorial2/frag.spv; sourceTree = SOURCE_ROOT; };
+		537EA88C2104CFF0008D5772 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		537EA88E2104D42F008D5772 /* RenderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RenderView.m; sourceTree = "<group>"; };
+		537EA8902104D443008D5772 /* RenderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RenderView.h; sourceTree = "<group>"; };
+		537EA8912104D489008D5772 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		53C8163F2102378E005121FA /* VulkanTutorial2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VulkanTutorial2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53C816422102378E005121FA /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		53C816432102378E005121FA /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -94,6 +101,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				537EA8922104D48A008D5772 /* MetalKit.framework in Frameworks */,
+				537EA88D2104CFF0008D5772 /* CoreVideo.framework in Frameworks */,
 				537EA8492103DE7A008D5772 /* vulkan.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -163,6 +172,8 @@
 				53C8165021023791005121FA /* VulkanTutorial2.entitlements */,
 				53C8165621023B81005121FA /* VulkanTutorial2.cpp */,
 				53C8165721023B81005121FA /* VulkanTutorial2.hpp */,
+				537EA88E2104D42F008D5772 /* RenderView.m */,
+				537EA8902104D443008D5772 /* RenderView.h */,
 			);
 			path = VulkanTutorial2;
 			sourceTree = "<group>";
@@ -170,6 +181,8 @@
 		53C8166321027666005121FA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				537EA8912104D489008D5772 /* MetalKit.framework */,
+				537EA88C2104CFF0008D5772 /* CoreVideo.framework */,
 				537EA8482103DE7A008D5772 /* vulkan.framework */,
 			);
 			name = Frameworks;
@@ -252,6 +265,7 @@
 			files = (
 				53C816472102378E005121FA /* ViewController.m in Sources */,
 				53C8164F21023791005121FA /* main.m in Sources */,
+				537EA88F2104D42F008D5772 /* RenderView.m in Sources */,
 				53C8165F210270C1005121FA /* lodepng.cpp in Sources */,
 				53C816442102378E005121FA /* AppDelegate.m in Sources */,
 				53C8165821023B81005121FA /* VulkanTutorial2.cpp in Sources */,
@@ -385,6 +399,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = VulkanTutorial2/VulkanTutorial2.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -419,6 +434,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = VulkanTutorial2/VulkanTutorial2.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

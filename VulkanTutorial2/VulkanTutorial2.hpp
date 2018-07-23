@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 int vktut2_create(void* nsView, int width, int height);
+void vktut2_drawframe(unsigned int frameIndex);
 void vktut2_destroy(void);
 #ifdef __cplusplus
 }
