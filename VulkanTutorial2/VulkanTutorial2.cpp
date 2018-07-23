@@ -130,9 +130,9 @@ class VulkanTutorialApp
 {
 public:
     
-    VulkanTutorialApp(void* view, int width, int height)
+    VulkanTutorialApp(void* view, int width, int height, float backingScaleFactor)
     {
-        initVulkan(view, width, height);
+        initVulkan(view, width, height, backingScaleFactor);
     }
     
     ~VulkanTutorialApp()
@@ -140,10 +140,10 @@ public:
         cleanup();
     }
     
-    void drawFrame(uint frameIndex)
+    void draw(uint frameIndex)
     {
         updateUniformBuffer(frameIndex);
-        drawFrame();
+        drawFrame(frameIndex);
     }
     
 private:
@@ -332,7 +332,7 @@ private:
         vmaCreateAllocator(&allocatorInfo, &myAllocator);
     }
     
-    void createSwapChain(uint width, uint height)
+    void createSwapChain(int width, int height, float backingScaleFactor)
     {
         VkSwapchainCreateInfoKHR swapChainCreateInfo = {};
         swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -356,6 +356,7 @@ private:
         
         mySwapChainImageFormat = swapChainCreateInfo.imageFormat;
         mySwapChainExtent = swapChainCreateInfo.imageExtent;
+        myBackingScaleFactor = backingScaleFactor;
         
         uint32_t imageCount;
         vkGetSwapchainImagesKHR(myDevice, mySwapChain, &imageCount, nullptr);
@@ -574,8 +575,8 @@ private:
         VkViewport viewport = {};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float)mySwapChainExtent.width;
-        viewport.height = (float)mySwapChainExtent.height;
+        viewport.width = (float)(mySwapChainExtent.width);
+        viewport.height = (float)(mySwapChainExtent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         
@@ -964,7 +965,7 @@ private:
         CHECK_VKRESULT(vkCreateSampler(myDevice, &samplerInfo, nullptr, &mySampler));
     }
     
-    void initVulkan(void* window, int width, int height)
+    void initVulkan(void* window, int width, int height, float backingScaleFactor)
     {
         createInstance();
         createDebugCallback();
@@ -972,7 +973,7 @@ private:
         createDevice();
         createAllocator();
         createCommandPool();
-        createSwapChain(width, height);
+        createSwapChain(width, height, backingScaleFactor);
         createRenderPass();
         createFramebuffers();
         
@@ -1003,13 +1004,13 @@ private:
         recordCommandBuffers();
     }
     
-    void recreateSwapChain(uint width, uint height)
+    void recreateSwapChain(uint width, uint height, float backingScaleFactor)
     {
         CHECK_VKRESULT(vkDeviceWaitIdle(myDevice));
         
         cleanupSwapChain();
         
-        createSwapChain(width, height);
+        createSwapChain(width, height, backingScaleFactor);
         createRenderPass();
         createFramebuffers();
         createGraphicsPipeline();
@@ -1056,8 +1057,10 @@ private:
     
     void checkFlipOrPresentResult(VkResult result)
     {
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
-            recreateSwapChain(mySwapChainExtent.width, mySwapChainExtent.height);
+        if (result == VK_SUBOPTIMAL_KHR)
+            return; // not much we can do
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+            recreateSwapChain(mySwapChainExtent.width, mySwapChainExtent.height, myBackingScaleFactor);
         else if (result != VK_SUCCESS)
             throw std::runtime_error("failed to flip swap chain image!");
     }
@@ -1065,9 +1068,9 @@ private:
     void updateUniformBuffer(uint /*frameIndex*/)
     {
         UniformBufferObject ubo = {};
-        ubo.model[0] = { 2, 0, 0, 0 };
-        ubo.model[1] = { 0, 2, 0, 0 };
-        ubo.model[2] = { 0, 0, 2, 0 };
+        ubo.model[0] = { 1, 0, 0, 0 };
+        ubo.model[1] = { 0, 1, 0, 0 };
+        ubo.model[2] = { 0, 0, 1, 0 };
         ubo.model[3] = { 0, 0, 0, 1 };
         ubo.view[0] = { 1, 0, 0, 0 };
         ubo.view[1] = { 0, 1, 0, 0 };
@@ -1084,7 +1087,7 @@ private:
         vmaUnmapMemory(myAllocator, myUniformBufferMemory);
     }
     
-    void drawFrame()
+    void drawFrame(uint frameIndex)
     {
         CHECK_VKRESULT(vkWaitForFences(myDevice, 1, &myInFlightFences[myCurrentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max()));
         CHECK_VKRESULT(vkResetFences(myDevice, 1, &myInFlightFences[myCurrentFrame]));
@@ -1121,7 +1124,7 @@ private:
         
         checkFlipOrPresentResult(vkQueuePresentKHR(myQueue, &presentInfo));
         
-        myCurrentFrame = (myCurrentFrame + 1) % MaxFramesInFlight;
+        myCurrentFrame = frameIndex % MaxFramesInFlight;
     }
     
     void cleanupSwapChain()
@@ -1269,6 +1272,7 @@ private:
     VkSwapchainKHR mySwapChain = VK_NULL_HANDLE;
     VkFormat mySwapChainImageFormat = VK_FORMAT_UNDEFINED;
     VkExtent2D mySwapChainExtent = { 0, 0 };
+    float myBackingScaleFactor = 1.0f;
     std::vector<VkImage> mySwapChainImages;
     std::vector<VkImageView> mySwapChainImageViews;
     std::vector<VkFramebuffer> mySwapChainFramebuffers;
@@ -1301,10 +1305,10 @@ private:
 
 const Vertex VulkanTutorialApp::ourVertices[] =
 {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+    {{-1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 
 const uint16_t VulkanTutorialApp::ourIndices[] =
@@ -1314,7 +1318,7 @@ const uint16_t VulkanTutorialApp::ourIndices[] =
 
 VulkanTutorialApp* theApp = nullptr;
 
-int vktut2_create(void* view, int width, int height)
+int vktut2_create(void* view, int width, int height, float backingScaleFactor)
 {
     assert(theApp == nullptr);
     
@@ -1332,7 +1336,7 @@ int vktut2_create(void* view, int width, int height)
         if (char* vkIcdFilenames = getenv(VK_ICD_FILENAMES_STR))
             std::cout << VK_ICD_FILENAMES_STR << "=" << vkIcdFilenames << std::endl;
         
-        theApp = new VulkanTutorialApp(view, width, height);
+        theApp = new VulkanTutorialApp(view, width, height, backingScaleFactor);
     }
     catch (const std::runtime_error& e)
     {
@@ -1354,6 +1358,6 @@ void vktut2_drawframe(unsigned int frame)
 {
     assert(theApp != nullptr);
     
-    theApp->drawFrame(frame);
+    theApp->draw(frame);
 }
 
