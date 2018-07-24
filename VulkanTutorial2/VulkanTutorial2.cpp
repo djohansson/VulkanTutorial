@@ -12,6 +12,7 @@
 #include <array>
 #include <assert.h>
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -29,6 +30,30 @@ template <typename T>
 constexpr auto sizeof_array(const T& array)
 {
     return (sizeof(array) / sizeof(array[0]));
+}
+
+template <typename T, typename U, typename V>
+inline T clamp(T x, U lowerlimit, V upperlimit)
+{
+    return (x < lowerlimit ? lowerlimit : (x > upperlimit ? upperlimit : x));
+}
+
+template <typename T, typename U, typename V>
+inline T ramp(T x, U edge0, V edge1)
+{
+    return (x - edge0) / (edge1 - edge0);
+}
+
+template <typename T>
+inline T smoothstep(T x)
+{
+    return x * x * (3 - 2 * x);
+}
+
+template <typename T>
+inline T smootherstep(T x)
+{
+    return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL
@@ -165,9 +190,7 @@ private:
             std::unique_ptr<VkLayerProperties[]> instanceLayers(new VkLayerProperties[instanceLayerCount]);
             CHECK_VKRESULT(vkEnumerateInstanceLayerProperties(&instanceLayerCount, instanceLayers.get()));
             for (int i = 0; i < instanceLayerCount; ++i)
-            {
                 std::cout << instanceLayers[i].layerName << "\n";
-            }
         }
         
         const char * enabledLayerNames[] =
@@ -197,9 +220,9 @@ private:
         };
         
         assert(std::includes(instanceExtensions.begin(), instanceExtensions.end(), requiredExtensions.begin(), requiredExtensions.end(), [](const char* lhs, const char* rhs)
-                             {
-                                 return strcmp(lhs, rhs) < 0;
-                             }));
+        {
+            return strcmp(lhs, rhs) < 0;
+        }));
         
         VkInstanceCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -256,9 +279,7 @@ private:
         }
         
         if (myPhysicalDevice == VK_NULL_HANDLE)
-        {
             throw std::runtime_error("failed to find a suitable GPU!");
-        }
         
         const float graphicsQueuePriority = 1.0f;
         
@@ -981,6 +1002,7 @@ private:
         createDeviceLocalBuffer(ourVertices, sizeof_array(ourVertices), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, myVertexBuffer, myVertexBufferMemory);
         createDeviceLocalBuffer(ourIndices, sizeof_array(ourIndices), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, myIndexBuffer, myIndexBufferMemory);
         {
+            // todo: proper platform independent resource loading
             CFBundleRef mainBundle = CFBundleGetMainBundle();
             CFURLRef imageURL = CFBundleCopyResourceURL(mainBundle, CFSTR("fractal_tree"), CFSTR("png"), NULL);
             const char* imagePath = CFStringGetCStringPtr(CFURLCopyFileSystemPath(imageURL, kCFURLPOSIXPathStyle), CFStringGetSystemEncoding());
@@ -1065,12 +1087,15 @@ private:
             throw std::runtime_error("failed to flip swap chain image!");
     }
     
-    void updateUniformBuffer(uint /*frameIndex*/)
+    void updateUniformBuffer(uint frameIndex)
     {
+        float t = static_cast<float>(frameIndex % 120) / 120;
+        float s = smootherstep(smoothstep(clamp(ramp(t < 0.5f ? t : 1 - t, 0, 0.5f), 0, 1)));
+        
         UniformBufferObject ubo = {};
-        ubo.model[0] = { 1, 0, 0, 0 };
-        ubo.model[1] = { 0, 1, 0, 0 };
-        ubo.model[2] = { 0, 0, 1, 0 };
+        ubo.model[0] = { 1 * s, 0, 0, 0 };
+        ubo.model[1] = { 0, 1 * s, 0, 0 };
+        ubo.model[2] = { 0, 0, 1 * s, 0 };
         ubo.model[3] = { 0, 0, 0, 1 };
         ubo.view[0] = { 1, 0, 0, 0 };
         ubo.view[1] = { 0, 1, 0, 0 };
