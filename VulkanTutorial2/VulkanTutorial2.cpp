@@ -920,7 +920,6 @@ private:
     void createDeviceLocalImage2D(const T* imageData, uint width, uint height, uint pixelSizeBytes, VkImageUsageFlags usage, VkImage& outImage, VmaAllocation& outImageMemory)
     {
         VkDeviceSize imageSize = width * height * pixelSizeBytes;
-        //assert(sizeof_array(imageData) == imageSize);
         
         VkBuffer stagingBuffer;
         VmaAllocation stagingBufferMemory;
@@ -1345,6 +1344,10 @@ VulkanTutorialApp* theApp = nullptr;
 
 int vktut2_create(void* view, int width, int height, float backingScaleFactor)
 {
+    assert(view != nullptr);
+    assert(width > 0);
+    assert(height > 0);
+    assert(backingScaleFactor > 0);
     assert(theApp == nullptr);
     
     try

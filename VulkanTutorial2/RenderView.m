@@ -12,8 +12,8 @@
 
 @interface RenderView()
 {
-    CVDisplayLinkRef displayLink;
-    unsigned int frameIndex;
+    CVDisplayLinkRef myDisplayLink;
+    unsigned int myFrameIndex;
 }
 - (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime;
 @end
@@ -28,7 +28,7 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 - (id)initWithFrame:(NSRect)frameRect
 {
     self = [super initWithFrame:frameRect];
-    [self setBounds: frameRect];
+    //self.bounds = frameRect;
     
     self.device = MTLCreateSystemDefaultDevice();
     self.colorPixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -46,6 +46,9 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     const float backingScaleFactor = [NSScreen mainScreen].backingScaleFactor;
     CGSize size = CGSizeMake(self.bounds.size.width * backingScaleFactor, self.bounds.size.height * backingScaleFactor);
     
+    if (![self.layer isKindOfClass:[CAMetalLayer class]])
+        [self setLayer:[CAMetalLayer layer]];
+    
     CAMetalLayer* renderLayer = [CAMetalLayer layer];
     renderLayer.device = self.device;
     renderLayer.pixelFormat = self.colorPixelFormat;
@@ -53,15 +56,15 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     renderLayer.frame = self.bounds;
     renderLayer.drawableSize = size;
     
-    self->frameIndex = 0;
+    myFrameIndex = 0;
     
-    vktut2_create((__bridge void *)(self), (int)size.width, (int)size.height, backingScaleFactor);
+    vktut2_create((__bridge void*)(self), (int)size.width, (int)size.height, backingScaleFactor);
     
     // Setup display link.
-    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
-    CVReturn error = CVDisplayLinkSetOutputCallback(displayLink, &displayLinkCallback, (__bridge void*)self);
+    CVDisplayLinkCreateWithActiveCGDisplays(&myDisplayLink);
+    CVReturn error = CVDisplayLinkSetOutputCallback(myDisplayLink, &displayLinkCallback, (__bridge void*)self);
     NSAssert((kCVReturnSuccess == error), @"Setting Display Link callback error %d", error);
-    error = CVDisplayLinkStart(displayLink);
+    error = CVDisplayLinkStart(myDisplayLink);
     NSAssert((kCVReturnSuccess == error), @"Creating Display Link error %d", error);
     
     return self;
@@ -69,7 +72,7 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 - (void)dealloc
 {
-    CVDisplayLinkStop(displayLink);
+    CVDisplayLinkStop(myDisplayLink);
     
     vktut2_destroy();
 }
@@ -86,9 +89,9 @@ static CVReturn displayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     return kCVReturnSuccess;
 }
 
-- (void)drawInMTKView:(nonnull MTKView *)view
+- (void)drawInMTKView:(nonnull MTKView*)view
 {
-    vktut2_drawframe(self->frameIndex++);
+    vktut2_drawframe(self->myFrameIndex++);
 }
 
 @end
